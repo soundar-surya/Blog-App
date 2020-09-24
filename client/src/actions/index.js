@@ -1,3 +1,4 @@
+import { Types } from 'aws-sdk/clients/acm';
 import axios from 'axios';
 import { FETCH_USER, FETCH_BLOGS, FETCH_BLOG } from './types';
 
@@ -13,9 +14,16 @@ export const handleToken = token => async dispatch => {
   dispatch({ type: FETCH_USER, payload: res.data });
 };
 
-export const submitBlog = (values, history) => async dispatch => {
-  const res = await axios.post('/api/blogs', values);
+export const submitBlog = (values, file, history) => async dispatch => {
 
+  const uploadConfig = await axios.get('/api/upload');
+  await axios.put(uploadConfig.data.url, file, { headers: {
+    'Content-Type': file.type
+  } } );
+
+  const res = await axios.post('/api/blogs', {
+    ...values, imageUrl: uploadConfig.data.key
+  } );
   history.push('/blogs');
   dispatch({ type: FETCH_BLOG, payload: res.data });
 };
